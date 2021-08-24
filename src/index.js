@@ -63,6 +63,7 @@ import Uploader from './uploader';
  * @property {object} [uploader] - optional custom uploader
  * @property {function(File): Promise.<UploadResponseFormat>} [uploader.uploadByFile] - method that upload image by File
  * @property {function(string): Promise.<UploadResponseFormat>} [uploader.uploadByUrl] - method that upload image by URL
+ * @property {function(): Promise.<String>} onSelectFile - Custom on select file handler
  */
 
 /**
@@ -122,6 +123,7 @@ export default class ImageTool {
       buttonContent: config.buttonContent || '',
       uploader: config.uploader || undefined,
       actions: config.actions || [],
+      onSelectFile: config.onSelectFile || undefined,
     };
 
     /**
@@ -140,11 +142,18 @@ export default class ImageTool {
       api,
       config: this.config,
       onSelectFile: () => {
-        this.uploader.uploadSelectedFile({
-          onPreview: (src) => {
+        if (this.onSelectFile) {
+          this.onSelectFile().then(src => {
+            this.image = src;
             this.ui.showPreloader(src);
-          },
-        });
+          });
+        } else {
+          this.uploader.uploadSelectedFile({
+            onPreview: (src) => {
+              this.ui.showPreloader(src);
+            },
+          });
+        }
       },
       readOnly,
     });
@@ -326,10 +335,16 @@ export default class ImageTool {
    * @param {object} file - uploaded file data
    */
   set image(file) {
-    this._data.file = file || {};
+    if (typeof file === 'string') {
+      this._data.file = { url: file };
+      this.ui.fillImage(file);
 
-    if (file && file.url) {
-      this.ui.fillImage(file.url);
+    } else {
+      this._data.file = file || {};
+  
+      if (file && file.url) {
+        this.ui.fillImage(file.url);
+      }
     }
   }
 
