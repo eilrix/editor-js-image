@@ -142,8 +142,8 @@ export default class ImageTool {
       api,
       config: this.config,
       onSelectFile: () => {
-        if (this.onSelectFile) {
-          this.onSelectFile().then(src => {
+        if (this.config.onSelectFile) {
+          this.config.onSelectFile().then(src => {
             this.image = src;
             this.ui.showPreloader(src);
           });
