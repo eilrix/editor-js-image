@@ -144,8 +144,12 @@ export default class ImageTool {
       onSelectFile: () => {
         if (this.config.onSelectFile) {
           this.config.onSelectFile().then(src => {
-            this.image = src;
-            this.ui.showPreloader(src);
+            if (src) {
+              this.ui.showPreloader(src);
+              this.image = src;
+            } else {
+              this.ui.hidePreloader();
+            }
           });
         } else {
           this.uploader.uploadSelectedFile({
